@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  wazuh.manager:
+    image: wazuh/wazuh-manager:4.12.0
+    hostname: wazuh.manager
+    restart: unless-stopped
+    networks: [siem]
+    volumes:
+      - wazuh-data:/var/ossec/data
+
+  wazuh.indexer:
+    image: wazuh/wazuh-indexer:4.12.0
+    hostname: wazuh.indexer
+    restart: unless-stopped
+    environment:
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=wazuh
+    volumes:
+      - indexer-data:/var/lib/wazuh-indexer
+    networks: [siem]
+
+  wazuh.dashboard:
+    image: wazuh/wazuh-dashboard:4.12.0
+    hostname: wazuh.dashboard
+    restart: unless-stopped
+    environment:
+      - INDEXER_URL=https://wazuh.indexer:9200
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=wazuh
+    depends_on: [wazuh.indexer]
+    ports:
+      - "443:5601"
+    networks: [siem]
+
+  api-proxy:
+    build: ./backend
+    hostname: api-proxy
+    environment:
+      - WAZUH_API_URL=https://wazuh.manager:55000
+      - WAZUH_USER=wazuh
+      - WAZUH_PASS=wazuh
+    ports:
+      - "5000:5000"
+    depends_on: [wazuh.manager]
+    networks: [siem]
+
+  frontend:
+    build: ./frontend
+    hostname: frontend
+    ports:
+      - "3000:80"
+    depends_on: [api-proxy]
+    networks: [siem]
+
+networks:
+  siem:
+
+volumes:
+  wazuh-data:
+  indexer-data:
