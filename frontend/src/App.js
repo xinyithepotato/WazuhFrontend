@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 // ---------- helpers ----------
-const API = "http://34.121.160.202:5000";
+const API = "http://<host>:5500"; 
 const fetchJSON = (url) => fetch(url).then((r) => r.json());
 
 // ---------- main ----------
