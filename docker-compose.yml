@@ -40,7 +40,7 @@ services:
       - WAZUH_USER=wazuh
       - WAZUH_PASS=wazuh
     ports:
-      - "5000:5500"
+      - "5000:5000"
     depends_on: [wazuh.manager]
     networks: [siem]
 
